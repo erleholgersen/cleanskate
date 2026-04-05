@@ -1,0 +1,21 @@
+[workspace]
+name = "cleanskate"
+version = "0.1.0"
+description = "Pandas-friendly access to figure skating scores"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+python = "3.12.*"
+ipython = ">=9.0,<10"
+
+[pypi-dependencies]
+cleanskate = { path = ".", editable = true }
+pandas = ">=2.2"
+platformdirs = ">=4.3"
+pyarrow = ">=16.0"
+requests = ">=2.32"
+
+[tasks]
+python = "python"
+ipython = "ipython"

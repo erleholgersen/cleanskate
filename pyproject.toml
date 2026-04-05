@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cleanskate"
+version = "0.1.0"
+description = "Pandas-friendly access to figure skating scores"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Erle Ellis" }]
+dependencies = [
+  "pandas>=2.2",
+  "platformdirs>=4.3",
+  "pyarrow>=16.0",
+  "requests>=2.32",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ipython>=9.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cleanskate"]
