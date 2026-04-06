@@ -1,0 +1,247 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from cleanskate import Dataset
+
+
+@pytest.fixture
+def sample_tables() -> dict[str, list[dict[str, object]]]:
+    """Return a tiny normalized dataset for loader tests."""
+    return {
+        "events": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "competition_name": "ISU World Figure Skating Championships 2026",
+                "season": "2025-2026",
+                "location": "Prague / CZE",
+                "venue": "Arena",
+                "start_date": "2026-03-24",
+                "end_date": "2026-03-29",
+                "event_id": "season2526/wc2026",
+                "competition_code": "wc2026",
+                "event_url": "https://storage.example/wc2026",
+            },
+            {
+                "event_label": "Grand Prix Final 2025",
+                "event_series": "Grand Prix Final",
+                "competition_name": "ISU Grand Prix of Figure Skating Final 2025",
+                "season": "2025-2026",
+                "location": "Nagoya / JPN",
+                "venue": "Arena",
+                "start_date": "2025-12-01",
+                "end_date": "2025-12-07",
+                "event_id": "season2526/gpf2025",
+                "competition_code": "gpf2025",
+                "event_url": "https://storage.example/gpf2025",
+            },
+        ],
+        "segments": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "event_id": "season2526/wc2026",
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "discipline": "Men",
+                "segment_name": "Free Skating",
+                "segment_label": "Men FS",
+                "is_team_event": False,
+                "base_discipline": "Men",
+                "result_count": 2,
+                "segment_order": 1,
+            },
+            {
+                "event_label": "Grand Prix Final 2025",
+                "event_series": "Grand Prix Final",
+                "event_id": "season2526/gpf2025",
+                "segment_id": "season2526/gpf2025/women/short-program",
+                "discipline": "Women",
+                "segment_name": "Short Program",
+                "segment_label": "Women SP",
+                "is_team_event": False,
+                "base_discipline": "Women",
+                "result_count": 1,
+                "segment_order": 1,
+            },
+        ],
+        "results": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "segment_label": "Men FS",
+                "rank": 1,
+                "name": "Ilia MALININ",
+                "noc": "USA",
+                "starting_number": 24,
+                "total_segment_score": 210.00,
+                "total_element_score": 120.00,
+                "total_program_component_score": 90.00,
+                "total_deductions": 0.0,
+                "element_base_value_sum": 100.00,
+                "element_panel_score_sum": 120.00,
+                "program_component_score_factored": 90.00,
+                "deduction_detail": None,
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "result_id": "season2526/wc2026/men/free-skating/result-001",
+            },
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "segment_label": "Men FS",
+                "rank": 2,
+                "name": "Yuma KAGIYAMA",
+                "noc": "JPN",
+                "starting_number": 23,
+                "total_segment_score": 190.00,
+                "total_element_score": 108.00,
+                "total_program_component_score": 82.00,
+                "total_deductions": 0.0,
+                "element_base_value_sum": 95.00,
+                "element_panel_score_sum": 108.00,
+                "program_component_score_factored": 82.00,
+                "deduction_detail": None,
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "result_id": "season2526/wc2026/men/free-skating/result-002",
+            },
+            {
+                "event_label": "Grand Prix Final 2025",
+                "event_series": "Grand Prix Final",
+                "segment_label": "Women SP",
+                "rank": 1,
+                "name": "Kaori SAKAMOTO",
+                "noc": "JPN",
+                "starting_number": 6,
+                "total_segment_score": 78.50,
+                "total_element_score": 40.00,
+                "total_program_component_score": 38.50,
+                "total_deductions": 0.0,
+                "element_base_value_sum": 35.00,
+                "element_panel_score_sum": 40.00,
+                "program_component_score_factored": 38.50,
+                "deduction_detail": None,
+                "segment_id": "season2526/gpf2025/women/short-program",
+                "result_id": "season2526/gpf2025/women/short-program/result-001",
+            },
+        ],
+        "elements": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "event_name": "ISU World Figure Skating Championships 2026",
+                "segment_label": "Men FS",
+                "name": "Ilia MALININ",
+                "noc": "USA",
+                "element_number": 1,
+                "element_code": "4Lz",
+                "element_family": "Jump",
+                "valid_element": True,
+                "info_flags": None,
+                "base_value": 11.50,
+                "second_half_bonus": False,
+                "goe": 3.0,
+                "panel_score": 14.50,
+                "judge_scores": [3, 3, 3],
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "result_id": "season2526/wc2026/men/free-skating/result-001",
+                "element_id": "season2526/wc2026/men/free-skating/result-001/element-01",
+            },
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "event_name": "ISU World Figure Skating Championships 2026",
+                "segment_label": "Men FS",
+                "name": "Ilia MALININ",
+                "noc": "USA",
+                "element_number": 2,
+                "element_code": "CCoSp4",
+                "element_family": "Spin",
+                "valid_element": True,
+                "info_flags": None,
+                "base_value": 3.5,
+                "second_half_bonus": False,
+                "goe": 1.0,
+                "panel_score": 4.5,
+                "judge_scores": [1, 1, 1],
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "result_id": "season2526/wc2026/men/free-skating/result-001",
+                "element_id": "season2526/wc2026/men/free-skating/result-001/element-02",
+            },
+            {
+                "event_label": "Grand Prix Final 2025",
+                "event_series": "Grand Prix Final",
+                "event_name": "ISU Grand Prix of Figure Skating Final 2025",
+                "segment_label": "Women SP",
+                "name": "Kaori SAKAMOTO",
+                "noc": "JPN",
+                "element_number": 1,
+                "element_code": "2A",
+                "element_family": "Jump",
+                "valid_element": True,
+                "info_flags": None,
+                "base_value": 3.3,
+                "second_half_bonus": False,
+                "goe": 1.2,
+                "panel_score": 4.5,
+                "judge_scores": [1, 2, 1],
+                "segment_id": "season2526/gpf2025/women/short-program",
+                "result_id": "season2526/gpf2025/women/short-program/result-001",
+                "element_id": "season2526/gpf2025/women/short-program/result-001/element-01",
+            },
+        ],
+        "program_components": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "event_name": "ISU World Figure Skating Championships 2026",
+                "segment_label": "Men FS",
+                "name": "Ilia MALININ",
+                "noc": "USA",
+                "component_name": "Composition",
+                "factor": 3.33,
+                "average": 9.50,
+                "judge_scores": [9.5, 9.5, 9.5],
+                "segment_id": "season2526/wc2026/men/free-skating",
+                "result_id": "season2526/wc2026/men/free-skating/result-001",
+                "program_component_id": "season2526/wc2026/men/free-skating/result-001/component-composition",
+            },
+            {
+                "event_label": "Grand Prix Final 2025",
+                "event_series": "Grand Prix Final",
+                "event_name": "ISU Grand Prix of Figure Skating Final 2025",
+                "segment_label": "Women SP",
+                "name": "Kaori SAKAMOTO",
+                "noc": "JPN",
+                "component_name": "Presentation",
+                "factor": 2.67,
+                "average": 8.75,
+                "judge_scores": [8.5, 9.0, 8.75],
+                "segment_id": "season2526/gpf2025/women/short-program",
+                "result_id": "season2526/gpf2025/women/short-program/result-001",
+                "program_component_id": "season2526/gpf2025/women/short-program/result-001/component-presentation",
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def local_dataset_dir(tmp_path: Path, sample_tables: dict[str, list[dict[str, object]]]) -> Path:
+    """Write a small local JSON dataset and return its directory."""
+    for table_name, rows in sample_tables.items():
+        (tmp_path / f"{table_name}.json").write_text(json.dumps(rows, indent=2) + "\n")
+    return tmp_path
+
+
+@pytest.fixture
+def local_dataset(local_dataset_dir: Path) -> Dataset:
+    """Return a dataset handle pointed at the local fixture tables."""
+    return Dataset(
+        version="latest",
+        base_dir=local_dataset_dir,
+        manifest_url="https://does-not-resolve.invalid/latest.json",
+    )
+

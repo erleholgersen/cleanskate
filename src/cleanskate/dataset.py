@@ -16,7 +16,13 @@ from cleanskate.constants import (
     DEFAULT_SEGMENT_COLUMNS,
     TABLE_NAMES,
 )
-from cleanskate.manifest import DatasetManifest, TableAsset, fetch_manifest
+from cleanskate.manifest import (
+    DatasetManifest,
+    TableAsset,
+    fetch_manifest,
+    read_manifest,
+    write_manifest,
+)
 
 
 class Dataset:
@@ -42,6 +48,7 @@ class Dataset:
         self.manifest_url = self._resolve_manifest_url(manifest_url, version)
         self.timeout = timeout
         self._manifest: DatasetManifest | None = None
+        self._needs_refresh = False
 
     def prefetch(self, force: bool = False) -> Path:
         """Download all dataset files referenced by the current manifest.
@@ -57,10 +64,11 @@ class Dataset:
 
         for asset in manifest.tables.values():
             destination = self.base_dir / asset.filename
-            if destination.exists() and not force:
+            if destination.exists() and not force and not self._needs_refresh:
                 continue
             self._download_file(asset, destination)
 
+        self._needs_refresh = False
         return self.base_dir
 
     def download_latest(self, force: bool = False) -> Path:
@@ -73,7 +81,10 @@ class Dataset:
         Returns:
             DatasetManifest: Parsed dataset manifest.
         """
+        local_manifest = self.local_manifest()
         self._manifest = fetch_manifest(self.manifest_url, timeout=self.timeout)
+        self._needs_refresh = self._manifest_has_changed(local_manifest, self._manifest)
+        write_manifest(self._manifest, self.local_manifest_path())
         return self._manifest
 
     def manifest(self) -> DatasetManifest:
@@ -83,8 +94,35 @@ class Dataset:
             DatasetManifest: Current dataset manifest.
         """
         if self._manifest is None:
-            return self.refresh_manifest()
+            try:
+                return self.refresh_manifest()
+            except requests.RequestException:
+                local_manifest = self.local_manifest()
+                if local_manifest is None:
+                    raise
+                self._manifest = local_manifest
+                self._needs_refresh = False
+                return local_manifest
         return self._manifest
+
+    def local_manifest_path(self) -> Path:
+        """Return the cache path for the local manifest file.
+
+        Returns:
+            Path: Local manifest JSON path inside the dataset cache.
+        """
+        return self.base_dir / "manifest.json"
+
+    def local_manifest(self) -> DatasetManifest | None:
+        """Read the locally cached manifest when present.
+
+        Returns:
+            DatasetManifest | None: Cached manifest, or ``None`` if missing.
+        """
+        path = self.local_manifest_path()
+        if not path.exists():
+            return None
+        return read_manifest(path)
 
     def available_tables(self) -> list[str]:
         """List logical table names currently available locally.
@@ -158,12 +196,19 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
     ) -> pd.DataFrame:
         """Load rows from the ``events`` table."""
         return self.load_table(
             "events",
-            filters={"event_id": event_id, "event_series": event_series},
+            filters={
+                "event_id": event_id,
+                "event_series": event_series,
+                "season": season,
+                "event_label": event_label,
+            },
             columns=columns,
         )
 
@@ -171,7 +216,11 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
+        segment_label: str | Sequence[str] | None = None,
         is_team_event: bool | None = None,
         columns: Sequence[str] | None = None,
     ) -> pd.DataFrame:
@@ -181,7 +230,11 @@ class Dataset:
             filters={
                 "event_id": event_id,
                 "event_series": event_series,
+                "season": season,
+                "event_label": event_label,
                 "segment_id": segment_id,
+                "discipline": discipline,
+                "segment_label": segment_label,
                 "is_team_event": is_team_event,
             },
         )
@@ -198,7 +251,11 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
+        segment_label: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
         result_id: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
         include_ids: bool = False,
@@ -206,10 +263,21 @@ class Dataset:
         """Load rows from the ``results`` table."""
         frame = self.load_table(
             "results",
-            filters={"segment_id": segment_id, "result_id": result_id, "event_series": event_series},
+            filters={
+                "segment_id": segment_id,
+                "result_id": result_id,
+                "event_series": event_series,
+                "season": season,
+                "event_label": event_label,
+                "segment_label": segment_label,
+            },
         )
-        if event_id is not None:
-            segment_ids = self.load_segments(event_id=event_id, columns=["segment_id"])["segment_id"]
+        if event_id is not None or discipline is not None:
+            segment_ids = self.load_segments(
+                event_id=event_id,
+                discipline=discipline,
+                columns=["segment_id"],
+            )["segment_id"]
             frame = frame[frame["segment_id"].isin(segment_ids)]
         if columns is None and not include_ids:
             frame = frame.loc[:, list(DEFAULT_RESULT_COLUMNS)]
@@ -224,18 +292,38 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
+        segment_label: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
+        element_family: str | Sequence[str] | None = None,
         result_id: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
         """Load rows from the ``elements`` table."""
-        frame = self.load_table("elements", filters={"result_id": result_id})
-        if event_id is not None or event_series is not None or segment_id is not None:
+        frame = self.load_table(
+            "elements",
+            filters={"result_id": result_id, "element_family": element_family},
+        )
+        if (
+            event_id is not None
+            or event_series is not None
+            or season is not None
+            or event_label is not None
+            or segment_id is not None
+            or segment_label is not None
+            or discipline is not None
+        ):
             results = self.load_results(
                 event_id=event_id,
                 event_series=event_series,
+                season=season,
+                event_label=event_label,
                 segment_id=segment_id,
+                segment_label=segment_label,
+                discipline=discipline,
                 columns=["result_id"],
             )
             frame = frame[frame["result_id"].isin(results["result_id"])]
@@ -252,18 +340,34 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
+        segment_label: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
         result_id: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
         """Load rows from the ``program_components`` table."""
         frame = self.load_table("program_components", filters={"result_id": result_id})
-        if event_id is not None or event_series is not None or segment_id is not None:
+        if (
+            event_id is not None
+            or event_series is not None
+            or season is not None
+            or event_label is not None
+            or segment_id is not None
+            or segment_label is not None
+            or discipline is not None
+        ):
             results = self.load_results(
                 event_id=event_id,
                 event_series=event_series,
+                season=season,
+                event_label=event_label,
                 segment_id=segment_id,
+                segment_label=segment_label,
+                discipline=discipline,
                 columns=["result_id"],
             )
             frame = frame[frame["result_id"].isin(results["result_id"])]
@@ -375,16 +479,18 @@ class Dataset:
         Args:
             table_name: Logical table name.
         """
-        if self.table_path(table_name) is not None:
-            return
-
-        manifest = self.manifest()
+        try:
+            manifest = self.refresh_manifest() if self._manifest is None else self.manifest()
+        except requests.RequestException:
+            if self.table_path(table_name) is not None:
+                return
+            raise
         if table_name not in manifest.tables:
             return
 
         asset = manifest.tables[table_name]
         destination = self.base_dir / asset.filename
-        if destination.exists():
+        if destination.exists() and not self._needs_refresh:
             return
 
         self.base_dir.mkdir(parents=True, exist_ok=True)
@@ -407,3 +513,23 @@ class Dataset:
             return manifest_url
         prefix, suffix = manifest_url.rsplit("/", maxsplit=1)
         return f"{prefix}/{version}.json" if suffix == "latest.json" else manifest_url
+
+    @staticmethod
+    def _manifest_has_changed(
+        previous_manifest: DatasetManifest | None,
+        current_manifest: DatasetManifest,
+    ) -> bool:
+        """Return whether the remote manifest differs from the cached one.
+
+        Args:
+            previous_manifest: Cached local manifest when available.
+            current_manifest: Newly fetched remote manifest.
+
+        Returns:
+            bool: ``True`` when cached table files should be refreshed.
+        """
+        if previous_manifest is None:
+            return True
+        if previous_manifest.updated_at != current_manifest.updated_at:
+            return True
+        return previous_manifest.to_dict() != current_manifest.to_dict()

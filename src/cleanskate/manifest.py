@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -66,6 +67,25 @@ class DatasetManifest:
             tables=tables,
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the manifest back into a JSON-serializable dictionary.
+
+        Returns:
+            dict[str, Any]: Manifest payload suitable for writing to disk.
+        """
+        return {
+            "dataset_name": self.dataset_name,
+            "updated_at": self.updated_at,
+            "tables": {
+                table_name: {
+                    "url": asset.url,
+                    "filename": asset.filename,
+                    "format": asset.file_format,
+                }
+                for table_name, asset in self.tables.items()
+            },
+        }
+
 
 def fetch_manifest(manifest_url: str, timeout: int = 60) -> DatasetManifest:
     """Download and parse a remote dataset manifest.
@@ -80,3 +100,27 @@ def fetch_manifest(manifest_url: str, timeout: int = 60) -> DatasetManifest:
     response = requests.get(manifest_url, timeout=timeout)
     response.raise_for_status()
     return DatasetManifest.from_dict(response.json())
+
+
+def read_manifest(path: str | Path) -> DatasetManifest:
+    """Read a cached manifest from disk.
+
+    Args:
+        path: Local manifest path.
+
+    Returns:
+        DatasetManifest: Parsed manifest object.
+    """
+    return DatasetManifest.from_dict(json.loads(Path(path).read_text()))
+
+
+def write_manifest(manifest: DatasetManifest, path: str | Path) -> None:
+    """Write a manifest to disk as formatted JSON.
+
+    Args:
+        manifest: Manifest to persist.
+        path: Destination path.
+    """
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(manifest.to_dict(), indent=2) + "\n")

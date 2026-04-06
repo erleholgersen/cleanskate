@@ -16,6 +16,7 @@ DEFAULT_ELEMENT_COLUMNS = (
     "noc",
     "element_number",
     "element_code",
+    "element_family",
     "valid_element",
     "info_flags",
     "base_value",
