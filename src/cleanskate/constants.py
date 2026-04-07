@@ -11,13 +11,16 @@ DEFAULT_MANIFEST_URL = "https://storage.googleapis.com/cleanskate/latest.json"
 DEFAULT_ELEMENT_COLUMNS = (
     "event_label",
     "event_series",
+    "event_level",
     "segment_label",
     "name",
     "noc",
     "element_number",
     "element_code",
+    "attempt_code",
     "element_family",
     "valid_element",
+    "clean_element",
     "info_flags",
     "base_value",
     "second_half_bonus",
@@ -29,6 +32,7 @@ DEFAULT_ELEMENT_COLUMNS = (
 DEFAULT_PROGRAM_COMPONENT_COLUMNS = (
     "event_label",
     "event_series",
+    "event_level",
     "segment_label",
     "name",
     "noc",
@@ -41,6 +45,7 @@ DEFAULT_PROGRAM_COMPONENT_COLUMNS = (
 DEFAULT_SEGMENT_COLUMNS = (
     "event_label",
     "event_series",
+    "event_level",
     "discipline",
     "segment_name",
     "segment_label",
@@ -53,6 +58,7 @@ DEFAULT_SEGMENT_COLUMNS = (
 DEFAULT_RESULT_COLUMNS = (
     "event_label",
     "event_series",
+    "event_level",
     "segment_label",
     "rank",
     "name",

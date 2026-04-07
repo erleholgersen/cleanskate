@@ -1,7 +1,6 @@
-# cleanskate
+# ⛸️ cleanskate 
 
-`cleanskate` is a Python package for loading figure skating scores
-into pandas data frames.
+**cleanskate** is a Python package for accessing figure skating scores as pandas data frames.
 
 ## Example
 
@@ -36,6 +35,46 @@ grand_prix_women = dataset.load_results(
 )
 ```
 
+All loader filters accept either a single value or a list of values. Lists use
+"one of these values" semantics:
+
+```python
+from cleanskate import Dataset
+
+dataset = Dataset()
+
+senior_mens_jumps = dataset.load_elements(
+    event_level=["Senior", "Mixed"],
+    discipline="Men",
+    element_family="Jump",
+)
+
+triple_axel_attempts = dataset.load_elements(
+    attempt_code="3A",
+)
+
+non_clean_jump_attempts = dataset.load_elements(
+    event_level="Senior",
+    attempt_code=["3A", "4T", "4S"],
+    clean_element=False,
+)
+```
+
+The current recommended public filters are:
+
+- `season`
+- `event_series`
+- `event_level`
+- `event_label`
+- `segment_label`
+- `discipline`
+- `element_family`
+- `attempt_code`
+- `clean_element`
+
+Lower-level IDs like `event_id`, `segment_id`, and `result_id` are still
+available for power users, but most notebook workflows should not need them.
+
 You can also point the loader at a local dataset directory:
 
 ```python
@@ -48,3 +87,11 @@ segments = dataset.load_segments()
 The loader fetches missing tables automatically on first use, so users do not
 need to call a separate download step. `prefetch()` is still available when you
 want to warm the local cache explicitly.
+
+## Related work
+
+There are several related projects.
+
+- [BuzzFeed data parsers](https://github.com/BuzzFeedNews/figure-skating-scores/tree/master)
+- [BuzzFeed judge bias analysis](https://www.buzzfeednews.com/article/johntemplon/the-edge)
+- 

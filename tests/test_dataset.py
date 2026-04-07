@@ -13,19 +13,47 @@ from cleanskate.manifest import DatasetManifest, TableAsset, write_manifest
 
 def test_load_events_and_results_filters(local_dataset: Dataset) -> None:
     """Loader filters should narrow rows using readable fields."""
-    events = local_dataset.load_events(event_series="Worlds")
+    events = local_dataset.load_events(event_series="Worlds", event_level="Senior")
     assert list(events["event_label"]) == ["Worlds 2026"]
 
-    results = local_dataset.load_results(season="2025-2026", segment_label="Women SP")
+    results = local_dataset.load_results(season="2025-2026", segment_label="Women SP", event_level="Mixed")
     assert list(results["name"]) == ["Kaori SAKAMOTO"]
     assert list(results.columns) == list(DEFAULT_RESULT_COLUMNS)
 
 
 def test_load_elements_filters_and_default_columns(local_dataset: Dataset) -> None:
     """Elements should expose the default public columns and support family filters."""
-    jumps = local_dataset.load_elements(event_series="Worlds", element_family="Jump")
-    assert list(jumps["element_code"]) == ["4Lz"]
+    jumps = local_dataset.load_elements(event_series="Worlds", event_level="Senior", element_family="Jump")
+    assert list(jumps["element_code"]) == ["4Lz", "3A<"]
     assert list(jumps.columns) == list(DEFAULT_ELEMENT_COLUMNS)
+
+
+def test_load_elements_supports_attempt_and_clean_filters(local_dataset: Dataset) -> None:
+    """Elements should support filtering by attempted code and cleanliness."""
+    triple_axels = local_dataset.load_elements(attempt_code="3A")
+    assert list(triple_axels["element_code"]) == ["3A<"]
+
+    non_clean = local_dataset.load_elements(clean_element=False)
+    assert list(non_clean["element_code"]) == ["3A<"]
+
+
+def test_reuses_in_memory_table_cache(monkeypatch: pytest.MonkeyPatch, local_dataset: Dataset) -> None:
+    """Repeated loads should not reread the same table from disk."""
+    read_count = 0
+    original_read_table = Dataset._read_table
+
+    def counting_read_table(path: Path) -> pd.DataFrame:
+        nonlocal read_count
+        read_count += 1
+        return original_read_table(path)
+
+    monkeypatch.setattr(Dataset, "_read_table", staticmethod(counting_read_table))
+
+    first = local_dataset.load_elements(event_series="Worlds")
+    second = local_dataset.load_elements(event_series="Worlds")
+
+    assert len(first) == len(second) == 3
+    assert read_count == 2
 
 
 def test_load_helpers_for_visible_result_rows(local_dataset: Dataset) -> None:

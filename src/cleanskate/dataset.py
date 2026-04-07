@@ -49,6 +49,7 @@ class Dataset:
         self.timeout = timeout
         self._manifest: DatasetManifest | None = None
         self._needs_refresh = False
+        self._table_cache: dict[str, pd.DataFrame] = {}
 
     def prefetch(self, force: bool = False) -> Path:
         """Download all dataset files referenced by the current manifest.
@@ -84,6 +85,8 @@ class Dataset:
         local_manifest = self.local_manifest()
         self._manifest = fetch_manifest(self.manifest_url, timeout=self.timeout)
         self._needs_refresh = self._manifest_has_changed(local_manifest, self._manifest)
+        if self._needs_refresh:
+            self._table_cache.clear()
         write_manifest(self._manifest, self.local_manifest_path())
         return self._manifest
 
@@ -181,7 +184,7 @@ class Dataset:
                 "The package attempted to fetch it automatically and could not find it."
             )
 
-        frame = self._read_table(path)
+        frame = self._load_cached_table(table_name, path).copy()
         frame = self.apply_filters(frame, filters)
 
         if columns is not None:
@@ -196,6 +199,7 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
         season: str | Sequence[str] | None = None,
         event_label: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
@@ -206,6 +210,7 @@ class Dataset:
             filters={
                 "event_id": event_id,
                 "event_series": event_series,
+                "event_level": event_level,
                 "season": season,
                 "event_label": event_label,
             },
@@ -216,6 +221,7 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
         season: str | Sequence[str] | None = None,
         event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
@@ -230,6 +236,7 @@ class Dataset:
             filters={
                 "event_id": event_id,
                 "event_series": event_series,
+                "event_level": event_level,
                 "season": season,
                 "event_label": event_label,
                 "segment_id": segment_id,
@@ -251,6 +258,7 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
         season: str | Sequence[str] | None = None,
         event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
@@ -267,6 +275,7 @@ class Dataset:
                 "segment_id": segment_id,
                 "result_id": result_id,
                 "event_series": event_series,
+                "event_level": event_level,
                 "season": season,
                 "event_label": event_label,
                 "segment_label": segment_label,
@@ -292,12 +301,15 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
         season: str | Sequence[str] | None = None,
         event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
         segment_label: str | Sequence[str] | None = None,
         discipline: str | Sequence[str] | None = None,
         element_family: str | Sequence[str] | None = None,
+        attempt_code: str | Sequence[str] | None = None,
+        clean_element: bool | None = None,
         result_id: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
         include_ids: bool = False,
@@ -305,11 +317,17 @@ class Dataset:
         """Load rows from the ``elements`` table."""
         frame = self.load_table(
             "elements",
-            filters={"result_id": result_id, "element_family": element_family},
+            filters={
+                "result_id": result_id,
+                "element_family": element_family,
+                "attempt_code": attempt_code,
+                "clean_element": clean_element,
+            },
         )
         if (
             event_id is not None
             or event_series is not None
+            or event_level is not None
             or season is not None
             or event_label is not None
             or segment_id is not None
@@ -319,6 +337,7 @@ class Dataset:
             results = self.load_results(
                 event_id=event_id,
                 event_series=event_series,
+                event_level=event_level,
                 season=season,
                 event_label=event_label,
                 segment_id=segment_id,
@@ -340,6 +359,7 @@ class Dataset:
         self,
         event_id: str | Sequence[str] | None = None,
         event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
         season: str | Sequence[str] | None = None,
         event_label: str | Sequence[str] | None = None,
         segment_id: str | Sequence[str] | None = None,
@@ -354,6 +374,7 @@ class Dataset:
         if (
             event_id is not None
             or event_series is not None
+            or event_level is not None
             or season is not None
             or event_label is not None
             or segment_id is not None
@@ -363,6 +384,7 @@ class Dataset:
             results = self.load_results(
                 event_id=event_id,
                 event_series=event_series,
+                event_level=event_level,
                 season=season,
                 event_label=event_label,
                 segment_id=segment_id,
@@ -434,7 +456,11 @@ class Dataset:
         frame: pd.DataFrame,
         filters: Mapping[str, Any] | None = None,
     ) -> pd.DataFrame:
-        """Apply simple equality filters to a data frame."""
+        """Apply simple equality filters to a data frame.
+
+        Scalar filter values use exact equality. Iterable filter values such as
+        lists or tuples use "one of these values" semantics via ``isin``.
+        """
         if not filters:
             return frame
         filtered = frame
@@ -495,6 +521,17 @@ class Dataset:
 
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self._download_file(asset, destination)
+        self._table_cache.pop(table_name, None)
+
+    def _load_cached_table(self, table_name: str, path: Path) -> pd.DataFrame:
+        """Load one table, reusing an in-memory copy within this dataset handle."""
+        cached = self._table_cache.get(table_name)
+        if cached is not None:
+            return cached
+
+        frame = self._read_table(path)
+        self._table_cache[table_name] = frame
+        return frame
 
     @staticmethod
     def _resolve_manifest_url(manifest_url: str, version: str) -> str:
