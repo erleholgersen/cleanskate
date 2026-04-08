@@ -135,6 +135,31 @@ def sample_tables() -> dict[str, list[dict[str, object]]]:
                 "result_id": "season2526/gpf2025/women/short-program/result-001",
             },
         ],
+        "standings": [
+            {
+                "event_label": "Worlds 2026",
+                "event_series": "Worlds",
+                "event_level": "Senior",
+                "season": "2025-2026",
+                "discipline": "Men",
+                "standing_name": "Men Final",
+                "standing_type": "Final",
+                "is_combined": True,
+                "rank": 1,
+                "name": "Ilia MALININ",
+                "noc": "USA",
+                "total_score": 300.0,
+                "segment_1_label": "Men SP",
+                "segment_1_score": 100.0,
+                "segment_1_rank": 1,
+                "segment_2_label": "Men FS",
+                "segment_2_score": 200.0,
+                "segment_2_rank": 1,
+                "event_id": "season2526/wc2026",
+                "standing_id": "season2526/wc2026/men/final/result-001",
+                "standing_source_url": "https://storage.example/wc2026/final",
+            }
+        ],
         "elements": [
             {
                 "event_label": "Worlds 2026",

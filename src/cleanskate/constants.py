@@ -2,6 +2,7 @@ TABLE_NAMES = (
     "events",
     "segments",
     "results",
+    "standings",
     "elements",
     "program_components",
 )
@@ -72,4 +73,24 @@ DEFAULT_RESULT_COLUMNS = (
     "element_panel_score_sum",
     "program_component_score_factored",
     "deduction_detail",
+)
+
+DEFAULT_STANDING_COLUMNS = (
+    "event_label",
+    "event_series",
+    "event_level",
+    "season",
+    "discipline",
+    "standing_name",
+    "standing_type",
+    "rank",
+    "name",
+    "noc",
+    "total_score",
+    "segment_1_label",
+    "segment_1_score",
+    "segment_1_rank",
+    "segment_2_label",
+    "segment_2_score",
+    "segment_2_rank",
 )

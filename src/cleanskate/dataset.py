@@ -14,6 +14,7 @@ from cleanskate.constants import (
     DEFAULT_PROGRAM_COMPONENT_COLUMNS,
     DEFAULT_RESULT_COLUMNS,
     DEFAULT_SEGMENT_COLUMNS,
+    DEFAULT_STANDING_COLUMNS,
     TABLE_NAMES,
 )
 from cleanskate.manifest import (
@@ -352,6 +353,40 @@ class Dataset:
             missing = [column for column in columns if column not in frame.columns]
             if missing:
                 raise KeyError(f"Columns not found in elements: {missing}")
+            frame = frame.loc[:, list(columns)]
+        return frame.reset_index(drop=True)
+
+    def load_standings(
+        self,
+        event_id: str | Sequence[str] | None = None,
+        event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
+        standing_type: str | Sequence[str] | None = None,
+        columns: Sequence[str] | None = None,
+        include_ids: bool = False,
+    ) -> pd.DataFrame:
+        """Load rows from the ``standings`` table."""
+        frame = self.load_table(
+            "standings",
+            filters={
+                "event_id": event_id,
+                "event_series": event_series,
+                "event_level": event_level,
+                "season": season,
+                "event_label": event_label,
+                "discipline": discipline,
+                "standing_type": standing_type,
+            },
+        )
+        if columns is None and not include_ids:
+            frame = frame.loc[:, list(DEFAULT_STANDING_COLUMNS)]
+        elif columns is not None:
+            missing = [column for column in columns if column not in frame.columns]
+            if missing:
+                raise KeyError(f"Columns not found in standings: {missing}")
             frame = frame.loc[:, list(columns)]
         return frame.reset_index(drop=True)
 

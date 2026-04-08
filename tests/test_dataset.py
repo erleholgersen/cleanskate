@@ -8,6 +8,7 @@ import requests
 
 from cleanskate import Dataset
 from cleanskate.dataset import DEFAULT_ELEMENT_COLUMNS, DEFAULT_RESULT_COLUMNS
+from cleanskate.constants import DEFAULT_STANDING_COLUMNS
 from cleanskate.manifest import DatasetManifest, TableAsset, write_manifest
 
 
@@ -19,6 +20,18 @@ def test_load_events_and_results_filters(local_dataset: Dataset) -> None:
     results = local_dataset.load_results(season="2025-2026", segment_label="Women SP", event_level="Mixed")
     assert list(results["name"]) == ["Kaori SAKAMOTO"]
     assert list(results.columns) == list(DEFAULT_RESULT_COLUMNS)
+
+
+def test_load_standings_filters_and_default_columns(local_dataset: Dataset) -> None:
+    """Standings should load with readable filters and default public columns."""
+    standings = local_dataset.load_standings(
+        event_series="Worlds",
+        event_level="Senior",
+        discipline="Men",
+        standing_type="Final",
+    )
+    assert list(standings["name"]) == ["Ilia MALININ"]
+    assert list(standings.columns) == list(DEFAULT_STANDING_COLUMNS)
 
 
 def test_load_elements_filters_and_default_columns(local_dataset: Dataset) -> None:
