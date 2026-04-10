@@ -50,6 +50,22 @@ def test_load_elements_supports_attempt_and_clean_filters(local_dataset: Dataset
     assert list(non_clean["element_code"]) == ["3A<"]
 
 
+def test_load_elements_supports_call_flag_filters(local_dataset: Dataset) -> None:
+    """Elements should support filtering by derived call booleans."""
+    underrotated = local_dataset.load_elements(underrotated=True)
+    assert list(underrotated["element_code"]) == ["3A<"]
+
+    clean = local_dataset.load_elements(
+        element_family="Jump",
+        fall=False,
+        invalid_element=False,
+        downgraded=False,
+        edge_attention=False,
+        wrong_edge=False,
+    )
+    assert list(clean["element_code"]) == ["4Lz", "3A<", "2A"]
+
+
 def test_reuses_in_memory_table_cache(monkeypatch: pytest.MonkeyPatch, local_dataset: Dataset) -> None:
     """Repeated loads should not reread the same table from disk."""
     read_count = 0
