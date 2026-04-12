@@ -11,9 +11,11 @@ from cleanskate.cache import default_cache_dir
 from cleanskate.constants import (
     DEFAULT_ELEMENT_COLUMNS,
     DEFAULT_MANIFEST_URL,
+    DEFAULT_OFFICIAL_COLUMNS,
     DEFAULT_PROGRAM_COMPONENT_COLUMNS,
     DEFAULT_RESULT_COLUMNS,
     DEFAULT_SEGMENT_COLUMNS,
+    DEFAULT_SEGMENT_OFFICIAL_COLUMNS,
     DEFAULT_STANDING_COLUMNS,
     TABLE_NAMES,
 )
@@ -314,11 +316,11 @@ class Dataset:
         fall: bool | None = None,
         fall_inferred: bool | None = None,
         invalid_element: bool | None = None,
-        quarter_called: bool | None = None,
-        underrotated: bool | None = None,
-        downgraded: bool | None = None,
-        edge_attention: bool | None = None,
-        wrong_edge: bool | None = None,
+        call_quarter: bool | None = None,
+        call_underrotated: bool | None = None,
+        call_downgraded: bool | None = None,
+        call_edge_attention: bool | None = None,
+        call_wrong_edge: bool | None = None,
         result_id: str | Sequence[str] | None = None,
         columns: Sequence[str] | None = None,
         include_ids: bool = False,
@@ -334,11 +336,11 @@ class Dataset:
                 "fall": fall,
                 "fall_inferred": fall_inferred,
                 "invalid_element": invalid_element,
-                "quarter_called": quarter_called,
-                "underrotated": underrotated,
-                "downgraded": downgraded,
-                "edge_attention": edge_attention,
-                "wrong_edge": wrong_edge,
+                "call_quarter": call_quarter,
+                "call_underrotated": call_underrotated,
+                "call_downgraded": call_downgraded,
+                "call_edge_attention": call_edge_attention,
+                "call_wrong_edge": call_wrong_edge,
             },
         )
         if (
@@ -403,6 +405,90 @@ class Dataset:
             missing = [column for column in columns if column not in frame.columns]
             if missing:
                 raise KeyError(f"Columns not found in standings: {missing}")
+            frame = frame.loc[:, list(columns)]
+        return frame.reset_index(drop=True)
+
+    def load_officials(
+        self,
+        official_id: str | Sequence[str] | None = None,
+        nation: str | Sequence[str] | None = None,
+        columns: Sequence[str] | None = None,
+        include_ids: bool = False,
+    ) -> pd.DataFrame:
+        """Load rows from the ``officials`` table."""
+        frame = self.load_table(
+            "officials",
+            filters={
+                "official_id": official_id,
+                "nation": nation,
+            },
+        )
+        if columns is None and not include_ids:
+            frame = frame.loc[:, list(DEFAULT_OFFICIAL_COLUMNS)]
+        elif columns is not None:
+            missing = [column for column in columns if column not in frame.columns]
+            if missing:
+                raise KeyError(f"Columns not found in officials: {missing}")
+            frame = frame.loc[:, list(columns)]
+        return frame.reset_index(drop=True)
+
+    def load_segment_officials(
+        self,
+        event_id: str | Sequence[str] | None = None,
+        event_series: str | Sequence[str] | None = None,
+        event_level: str | Sequence[str] | None = None,
+        season: str | Sequence[str] | None = None,
+        event_label: str | Sequence[str] | None = None,
+        segment_id: str | Sequence[str] | None = None,
+        segment_label: str | Sequence[str] | None = None,
+        discipline: str | Sequence[str] | None = None,
+        official_id: str | Sequence[str] | None = None,
+        role: str | Sequence[str] | None = None,
+        columns: Sequence[str] | None = None,
+        include_ids: bool = False,
+    ) -> pd.DataFrame:
+        """Load rows from the ``segment_officials`` table."""
+        frame = self.load_table(
+            "segment_officials",
+            filters={
+                "segment_id": segment_id,
+                "official_id": official_id,
+                "role": role,
+            },
+        )
+        if (
+            event_id is not None
+            or event_series is not None
+            or event_level is not None
+            or season is not None
+            or event_label is not None
+            or segment_label is not None
+            or discipline is not None
+        ):
+            segments = self.load_segments(
+                event_id=event_id,
+                event_series=event_series,
+                event_level=event_level,
+                season=season,
+                event_label=event_label,
+                segment_label=segment_label,
+                discipline=discipline,
+                columns=["segment_id"],
+            )
+            frame = frame[frame["segment_id"].isin(segments["segment_id"])]
+        desired_columns = list(DEFAULT_SEGMENT_OFFICIAL_COLUMNS) if columns is None and not include_ids else list(columns or [])
+        segment_metadata_columns = {"event_label", "segment_label", "discipline", "segment_name"}
+        missing_segment_columns = [column for column in desired_columns if column in segment_metadata_columns and column not in frame.columns]
+        if missing_segment_columns:
+            segment_columns = ["segment_id", *missing_segment_columns]
+            segments = self.load_table("segments", columns=segment_columns)
+            frame = frame.merge(segments, on="segment_id", how="left")
+        if columns is None and not include_ids:
+            frame = frame.loc[:, list(DEFAULT_SEGMENT_OFFICIAL_COLUMNS)]
+        elif columns is not None:
+            missing = [column for column in columns if column not in frame.columns]
+            if missing:
+                raise KeyError(f"Columns not found in segment_officials: {missing}")
             frame = frame.loc[:, list(columns)]
         return frame.reset_index(drop=True)
 

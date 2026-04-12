@@ -8,7 +8,11 @@ import requests
 
 from cleanskate import Dataset
 from cleanskate.dataset import DEFAULT_ELEMENT_COLUMNS, DEFAULT_RESULT_COLUMNS
-from cleanskate.constants import DEFAULT_STANDING_COLUMNS
+from cleanskate.constants import (
+    DEFAULT_OFFICIAL_COLUMNS,
+    DEFAULT_SEGMENT_OFFICIAL_COLUMNS,
+    DEFAULT_STANDING_COLUMNS,
+)
 from cleanskate.manifest import DatasetManifest, TableAsset, write_manifest
 
 
@@ -34,6 +38,27 @@ def test_load_standings_filters_and_default_columns(local_dataset: Dataset) -> N
     assert list(standings.columns) == list(DEFAULT_STANDING_COLUMNS)
 
 
+
+def test_load_officials_filters_and_default_columns(local_dataset: Dataset) -> None:
+    """Officials should load with default public columns."""
+    officials = local_dataset.load_officials(nation="ISU")
+
+    assert list(officials["name"]) == ["Karen HOWARD", "Zanna KULIK"]
+    assert list(officials.columns) == list(DEFAULT_OFFICIAL_COLUMNS)
+
+
+def test_load_segment_officials_filters_and_default_columns(local_dataset: Dataset) -> None:
+    """Segment officials should filter through segment metadata cleanly."""
+    panel = local_dataset.load_segment_officials(
+        event_series="Worlds",
+        event_level="Senior",
+        discipline="Men",
+        segment_label="Men FS",
+    )
+
+    assert list(panel["role"]) == ["Referee", "Judge No.1"]
+    assert list(panel.columns) == list(DEFAULT_SEGMENT_OFFICIAL_COLUMNS)
+
 def test_load_elements_filters_and_default_columns(local_dataset: Dataset) -> None:
     """Elements should expose the default public columns and support family filters."""
     jumps = local_dataset.load_elements(event_series="Worlds", event_level="Senior", element_family="Jump")
@@ -52,16 +77,16 @@ def test_load_elements_supports_attempt_and_clean_filters(local_dataset: Dataset
 
 def test_load_elements_supports_call_flag_filters(local_dataset: Dataset) -> None:
     """Elements should support filtering by derived call booleans."""
-    underrotated = local_dataset.load_elements(underrotated=True)
+    underrotated = local_dataset.load_elements(call_underrotated=True)
     assert list(underrotated["element_code"]) == ["3A<"]
 
     clean = local_dataset.load_elements(
         element_family="Jump",
         fall=False,
         invalid_element=False,
-        downgraded=False,
-        edge_attention=False,
-        wrong_edge=False,
+        call_downgraded=False,
+        call_edge_attention=False,
+        call_wrong_edge=False,
     )
     assert list(clean["element_code"]) == ["4Lz", "3A<", "2A"]
 

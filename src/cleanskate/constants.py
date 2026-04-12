@@ -3,6 +3,8 @@ TABLE_NAMES = (
     "segments",
     "results",
     "standings",
+    "officials",
+    "segment_officials",
     "elements",
     "program_components",
 )
@@ -20,16 +22,16 @@ DEFAULT_ELEMENT_COLUMNS = (
     "element_code",
     "attempt_code",
     "element_family",
-    "valid_element",
+    "scored_element",
     "clean_element",
     "fall",
     "fall_inferred",
     "invalid_element",
-    "quarter_called",
-    "underrotated",
-    "downgraded",
-    "edge_attention",
-    "wrong_edge",
+    "call_quarter",
+    "call_underrotated",
+    "call_downgraded",
+    "call_edge_attention",
+    "call_wrong_edge",
     "info_flags",
     "base_value",
     "bonus_points",
@@ -103,4 +105,18 @@ DEFAULT_STANDING_COLUMNS = (
     "segment_2_label",
     "segment_2_score",
     "segment_2_rank",
+)
+
+DEFAULT_OFFICIAL_COLUMNS = (
+    "name",
+    "nation",
+)
+
+DEFAULT_SEGMENT_OFFICIAL_COLUMNS = (
+    "event_label",
+    "segment_label",
+    "role",
+    "panel_position",
+    "name",
+    "nation",
 )
