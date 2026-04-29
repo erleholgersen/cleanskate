@@ -10,6 +10,16 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Erle Ellis" }]
+keywords = ["figure skating", "sports analytics", "pandas", "data"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+]
 dependencies = [
   "pandas>=2.2",
   "platformdirs>=4.3",
@@ -19,9 +29,17 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "build>=1.2",
+  "hatchling>=1.26",
   "ipython>=9.0",
   "pytest>=8.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/erleholgersen/cleanskate"
+Repository = "https://github.com/erleholgersen/cleanskate"
+Issues = "https://github.com/erleholgersen/cleanskate/issues"
+Documentation = "https://github.com/erleholgersen/cleanskate#readme"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cleanskate"]

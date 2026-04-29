@@ -1,0 +1,31 @@
+{
+  "dataset_name": "cleanskate",
+  "updated_at": "2026-04-05T21:00:00Z",
+  "tables": {
+    "events": {
+      "url": "https://storage.googleapis.com/cleanskate/latest/events.parquet",
+      "filename": "events.parquet",
+      "format": "parquet"
+    },
+    "segments": {
+      "url": "https://storage.googleapis.com/cleanskate/latest/segments.parquet",
+      "filename": "segments.parquet",
+      "format": "parquet"
+    },
+    "results": {
+      "url": "https://storage.googleapis.com/cleanskate/latest/results.parquet",
+      "filename": "results.parquet",
+      "format": "parquet"
+    },
+    "elements": {
+      "url": "https://storage.googleapis.com/cleanskate/latest/elements.parquet",
+      "filename": "elements.parquet",
+      "format": "parquet"
+    },
+    "program_components": {
+      "url": "https://storage.googleapis.com/cleanskate/latest/program_components.parquet",
+      "filename": "program_components.parquet",
+      "format": "parquet"
+    }
+  }
+}
