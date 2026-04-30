@@ -133,6 +133,7 @@ Additional docs:
 - [API reference](./docs/api-reference.md)
 - [Data model](./docs/data-model.md)
 - [Dataset operations](./docs/dataset-operations.md)
+- [Dataset changelog](./DATASET_CHANGELOG.md)
 - [Provenance and citation](./docs/provenance.md)
 - [Analysis notes](./docs/analysis-notes.md)
 - [Release process](./docs/release-process.md)

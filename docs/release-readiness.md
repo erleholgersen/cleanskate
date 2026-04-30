@@ -43,7 +43,7 @@ Testing and quality:
 Dataset operations:
 
 - Exercise the documented dataset publishing flow on the next snapshot.
-- Add a dataset changelog entry template.
+- Keep [DATASET_CHANGELOG.md](../DATASET_CHANGELOG.md) current as snapshots are published.
 
 User experience:
 

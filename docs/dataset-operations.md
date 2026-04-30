@@ -68,9 +68,40 @@ fixtures.
 
 1. Build the normalized tables.
 2. Validate the tables using the snapshot checklist.
-3. Upload table files to the hosted dataset location.
-4. Upload a dated immutable manifest.
-5. Update `latest.json` only after the dated manifest is confirmed.
-6. Run a fresh `Dataset(version="latest").prefetch(force=True)` smoke test.
-7. Add a dataset changelog entry or release note describing coverage changes,
+3. Export the snapshot bundle, including manifests and release metadata.
+4. Upload table files to the hosted dataset location.
+5. Upload a dated immutable manifest.
+6. Update `latest.json` only after the dated manifest is confirmed.
+7. Run a fresh `Dataset(version="latest").prefetch(force=True)` smoke test.
+8. Add a dataset changelog entry or release note describing coverage changes,
    schema changes, and known caveats.
+
+## Snapshot Metadata
+
+The snapshot export flow should emit lightweight metadata alongside each
+manifest. At minimum, that metadata should include:
+
+- `version`
+- `updated_at`
+- row counts for every public table
+
+This makes it easier to:
+
+- write release notes quickly
+- compare snapshots at a glance
+- sanity-check that a release contains the expected public data
+
+## Release-Note Helper
+
+The backend repo includes a helper that turns snapshot metadata plus unresolved
+`EVENTS.yml` entries into a Markdown release-note skeleton:
+
+```bash
+python 10_prepare_dataset_release.py \
+  --metadata /tmp/cleanskate_snapshot/latest-metadata.json
+```
+
+You can paste the generated output into
+[`DATASET_CHANGELOG.md`](../DATASET_CHANGELOG.md) and then edit the coverage,
+schema, and quality sections with the specific human-facing notes for that
+snapshot.

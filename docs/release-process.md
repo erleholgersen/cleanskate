@@ -28,6 +28,8 @@ Before publishing:
 - Confirm the version in `pyproject.toml`.
 - Move the matching `CHANGELOG.md` section from `Unreleased` to the release
   date.
+- Update [DATASET_CHANGELOG.md](../DATASET_CHANGELOG.md) if the hosted dataset
+  snapshot changed as part of the release.
 - Confirm the README, API reference, and release readiness docs match the
   release scope.
 - Confirm CI is passing on `main`.
