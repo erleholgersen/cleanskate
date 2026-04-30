@@ -24,34 +24,26 @@ Package metadata:
 - Decide whether `0.1.0` is the first PyPI version or whether to publish an
   earlier pre-release.
 - Keep `CHANGELOG.md` current as release scope changes.
+- Follow the release process checklist for build, publish, tag, and smoke-test
+  steps.
 
 Documentation:
 
-- Add a short installation troubleshooting section for `pyarrow` and cache
-  refresh issues.
-- Document dataset snapshot naming and how long old snapshots will remain
-  available.
-- Add a provenance section explaining that source data comes from public skating
-  results/protocol pages and that some fields are derived.
-- Add a citation or acknowledgement note for users who publish analysis.
+- Review installation troubleshooting for `pyarrow` and cache refresh issues.
+- Review dataset snapshot naming and retention policy.
+- Review provenance and citation guidance.
 - Keep the notebooks runnable from a clean checkout.
 
 Testing and quality:
 
-- Add CI that runs tests on pull requests.
-- Add at least one packaging check that builds the wheel and source
-  distribution.
+- Watch the new CI workflow on the first pushed branch after this checklist
+  update.
 - Add linting or formatting once the preferred tool is chosen.
-- Add a smoke test that imports the installed wheel, not only the editable
-  checkout.
 
 Dataset operations:
 
-- Write down the process for publishing a new hosted manifest and table set.
-- Preserve immutable dated manifests once published.
-- Keep `latest` as a pointer, not as the only supported version.
-- Add a simple validation checklist for row counts, required columns, and table
-  relationships before publishing a new snapshot.
+- Exercise the documented dataset publishing flow on the next snapshot.
+- Add a dataset changelog entry template.
 
 User experience:
 
@@ -59,7 +51,7 @@ User experience:
   and no local cache exists.
 - Consider a small CLI later for `prefetch`, cache location, and manifest
   inspection. The Python API is enough for the first release.
-- Add issue templates once the repository is public enough to attract feedback.
+- Review issue templates after the first few external reports.
 
 ## Nice To Have After Release
 

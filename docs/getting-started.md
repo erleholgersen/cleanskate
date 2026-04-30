@@ -117,3 +117,46 @@ If you want to force a refresh:
 ```python
 ds.prefetch(force=True)
 ```
+
+## Troubleshooting
+
+### `pyarrow` installation issues
+
+`cleanskate` uses parquet files for the hosted dataset, so `pyarrow` is a normal
+runtime dependency. If installation fails, first make sure you are using a
+supported Python version:
+
+```bash
+python --version
+```
+
+The package currently supports Python 3.11 and newer. Then upgrade packaging
+tools and retry:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install cleanskate
+```
+
+If you are developing locally, install the dev extra:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+### Cache refresh issues
+
+`Dataset(version="latest")` checks the hosted manifest and refreshes stale local
+tables automatically. If a notebook appears to be using old data, force a fresh
+download:
+
+```python
+from cleanskate import Dataset
+
+ds = Dataset(version="latest")
+ds.prefetch(force=True)
+```
+
+For reproducible analysis, prefer a dated dataset version instead of `latest`.
+See [Dataset operations](./dataset-operations.md) for the intended snapshot
+policy.

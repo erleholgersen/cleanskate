@@ -33,6 +33,7 @@ dev = [
   "hatchling>=1.26",
   "ipython>=9.0",
   "pytest>=8.0",
+  "twine>=6.0",
 ]
 
 [project.urls]

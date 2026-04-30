@@ -16,3 +16,9 @@ Initial public package preparation:
   discipline, segment label, element family, attempt code, and call flags.
 - Add example notebooks and Markdown documentation for getting started, the data
   model, analysis caveats, API usage, and release readiness.
+- Add CI for tests, package builds, metadata checks, and installed-wheel smoke
+  tests.
+- Add provenance, citation, troubleshooting, and dataset publishing guidance.
+- Add GitHub issue templates for bugs, data issues, and feature requests.
+- Add a release process checklist for PyPI publishing and post-release smoke
+  tests.

@@ -1,0 +1,34 @@
+name: Data issue
+description: Report a possible parsing, coverage, or dataset problem
+title: "[Data]: "
+labels:
+  - data
+body:
+  - type: textarea
+    id: dataset
+    attributes:
+      label: Dataset version and table
+      description: Include the dataset version, table name, and relevant filters or row identifiers.
+      placeholder: "version=latest, table=elements, event_label=Worlds 2026"
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What looks wrong?
+      description: Describe the row, event, segment, element, score, or official assignment that needs review.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source link or protocol reference
+      description: Link to the public results/protocol page when you have it.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+    validations:
+      required: false

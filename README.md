@@ -132,7 +132,10 @@ Additional docs:
 - [Getting started](./docs/getting-started.md)
 - [API reference](./docs/api-reference.md)
 - [Data model](./docs/data-model.md)
+- [Dataset operations](./docs/dataset-operations.md)
+- [Provenance and citation](./docs/provenance.md)
 - [Analysis notes](./docs/analysis-notes.md)
+- [Release process](./docs/release-process.md)
 - [Release readiness](./docs/release-readiness.md)
 
 ## Project Status
