@@ -32,7 +32,9 @@ dev = [
   "build>=1.2",
   "hatchling>=1.26",
   "ipython>=9.0",
+  "matplotlib>=3.10",
   "pytest>=8.0",
+  "seaborn>=0.13",
   "twine>=6.0",
 ]
 

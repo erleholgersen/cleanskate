@@ -1,28 +1,10 @@
-# cleanskate
+# ⛸️ cleanskate
 
 `cleanskate` is a Python package for loading figure skating scores as pandas data
-frames.
+frames. The package covers overall results, judge information, program components scores, 
+and per element scores for international events from the `2018-2019` season onwards. 
 
-It is designed for notebook-driven analysis: the package gives you clean tables,
-helpful filters, and local caching, then gets out of your way so you can keep
-working in pandas, seaborn, matplotlib, or statsmodels.
-
-## What You Get
-
-`cleanskate` loads these public tables:
-
-- `events`
-- `segments`
-- `results`
-- `standings`
-- `officials`
-- `segment_officials`
-- `elements`
-- `program_components`
-
-The current hosted dataset covers major international events from the
-`2018-2019` season onward, including:
-
+The current dataset covers major international events, including:
 - Olympics
 - Worlds
 - Junior Worlds
@@ -32,6 +14,8 @@ The current hosted dataset covers major international events from the
 - Grand Prix Final
 - Junior Grand Prix
 - much of the Challenger Series
+
+The dataset may be expanded in the future. Feel free to open an issue if you notice anything missing.
 
 ## Installation
 
@@ -123,7 +107,7 @@ ds.prefetch()
 The repository currently includes:
 
 - [Quick start notebook](./examples/quick_start.ipynb)
-- [Judge bias notebook](./examples/judge_bias.ipynb)
+- [Judge nationality patterns notebook](./examples/judge_nationality_patterns.ipynb)
 
 ## Documentation
 
@@ -139,14 +123,6 @@ Additional docs:
 - [Release process](./docs/release-process.md)
 - [Release readiness](./docs/release-readiness.md)
 
-## Project Status
-
-`cleanskate` is already useful for real analysis, but the public API and example
-notebooks are still evolving. The main goals right now are:
-
-- polishing the notebook story
-- tightening the public documentation
-- continuing to improve dataset coverage and consistency
 
 ## Related Work
 

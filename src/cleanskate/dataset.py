@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 import pandas as pd
 import requests
@@ -26,6 +26,10 @@ from cleanskate.manifest import (
     read_manifest,
     write_manifest,
 )
+
+StringFilter: TypeAlias = str | Sequence[str] | None
+BoolFilter: TypeAlias = bool | None
+ColumnSelection: TypeAlias = Sequence[str] | None
 
 
 class Dataset:
@@ -76,7 +80,16 @@ class Dataset:
         return self.base_dir
 
     def download_latest(self, force: bool = False) -> Path:
-        """Backward-compatible alias for downloading the current dataset."""
+        """Download the current dataset.
+
+        This method is kept as a backward-compatible alias for ``prefetch()``.
+
+        Args:
+            force: Whether to redownload files even if they already exist.
+
+        Returns:
+            Path: Local base directory containing cached data files.
+        """
         return self.prefetch(force=force)
 
     def refresh_manifest(self) -> DatasetManifest:
@@ -167,7 +180,7 @@ class Dataset:
         self,
         table_name: str,
         filters: Mapping[str, Any] | None = None,
-        columns: Sequence[str] | None = None,
+        columns: ColumnSelection = None,
     ) -> pd.DataFrame:
         """Load one table as a pandas data frame.
 
@@ -200,14 +213,26 @@ class Dataset:
 
     def load_events(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        columns: ColumnSelection = None,
     ) -> pd.DataFrame:
-        """Load rows from the ``events`` table."""
+        """Load rows from the ``events`` table.
+
+        Args:
+            event_id: Event identifier, such as ``season2526/wc2026``.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            columns: Optional subset of columns to return.
+
+        Returns:
+            pd.DataFrame: Matching event rows.
+        """
         return self.load_table(
             "events",
             filters={
@@ -222,18 +247,36 @@ class Dataset:
 
     def load_segments(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        segment_id: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        segment_label: str | Sequence[str] | None = None,
-        is_team_event: bool | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        segment_id: StringFilter = None,
+        discipline: StringFilter = None,
+        segment_label: StringFilter = None,
+        is_team_event: BoolFilter = None,
+        columns: ColumnSelection = None,
     ) -> pd.DataFrame:
-        """Load rows from the ``segments`` table."""
+        """Load rows from the ``segments`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            segment_id: Segment identifier to filter by.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            segment_label: Short segment label, such as ``Men SP`` or ``Women FS``.
+            is_team_event: Whether to keep only team-event or non-team-event segments.
+            columns: Optional subset of columns to return. Defaults to the public
+                segment columns.
+
+        Returns:
+            pd.DataFrame: Matching segment rows.
+        """
         frame = self.load_table(
             "segments",
             filters={
@@ -259,19 +302,38 @@ class Dataset:
 
     def load_results(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        segment_id: str | Sequence[str] | None = None,
-        segment_label: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        result_id: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        segment_id: StringFilter = None,
+        segment_label: StringFilter = None,
+        discipline: StringFilter = None,
+        result_id: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``results`` table."""
+        """Load rows from the ``results`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            segment_id: Segment identifier to filter by.
+            segment_label: Short segment label, such as ``Men SP`` or ``Women FS``.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            result_id: Result identifier to filter by.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID and source columns when ``columns``
+                is not provided.
+
+        Returns:
+            pd.DataFrame: Matching result rows.
+        """
         frame = self.load_table(
             "results",
             filters={
@@ -302,30 +364,61 @@ class Dataset:
 
     def load_elements(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        segment_id: str | Sequence[str] | None = None,
-        segment_label: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        element_family: str | Sequence[str] | None = None,
-        attempt_code: str | Sequence[str] | None = None,
-        clean_element: bool | None = None,
-        fall: bool | None = None,
-        fall_inferred: bool | None = None,
-        invalid_element: bool | None = None,
-        call_quarter: bool | None = None,
-        call_underrotated: bool | None = None,
-        call_downgraded: bool | None = None,
-        call_edge_attention: bool | None = None,
-        call_wrong_edge: bool | None = None,
-        result_id: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        segment_id: StringFilter = None,
+        segment_label: StringFilter = None,
+        discipline: StringFilter = None,
+        element_family: StringFilter = None,
+        attempt_code: StringFilter = None,
+        clean_element: BoolFilter = None,
+        fall: BoolFilter = None,
+        fall_inferred: BoolFilter = None,
+        invalid_element: BoolFilter = None,
+        call_quarter: BoolFilter = None,
+        call_underrotated: BoolFilter = None,
+        call_downgraded: BoolFilter = None,
+        call_edge_attention: BoolFilter = None,
+        call_wrong_edge: BoolFilter = None,
+        result_id: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``elements`` table."""
+        """Load rows from the ``elements`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            segment_id: Segment identifier to filter by.
+            segment_label: Short segment label, such as ``Men SP`` or ``Women FS``.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            element_family: Element family, such as ``Jump``, ``Spin``, or
+                ``Step Sequence``.
+            attempt_code: Parsed attempted element code, such as ``3A`` or ``4T``.
+            clean_element: Whether to filter by clean-element status.
+            fall: Whether to filter by assigned element-level fall status.
+            fall_inferred: Whether to filter by inferred fall status.
+            invalid_element: Whether to filter by invalidated element status.
+            call_quarter: Whether to filter by quarter-rotation calls.
+            call_underrotated: Whether to filter by underrotation calls.
+            call_downgraded: Whether to filter by downgrade calls.
+            call_edge_attention: Whether to filter by edge-attention calls.
+            call_wrong_edge: Whether to filter by wrong-edge calls.
+            result_id: Result identifier to filter by.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID and source columns when ``columns``
+                is not provided.
+
+        Returns:
+            pd.DataFrame: Matching element rows.
+        """
         frame = self.load_table(
             "elements",
             filters={
@@ -376,17 +469,34 @@ class Dataset:
 
     def load_standings(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        standing_type: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        discipline: StringFilter = None,
+        standing_type: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``standings`` table."""
+        """Load rows from the ``standings`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            standing_type: Standing type, such as ``Final``.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID and source columns when ``columns``
+                is not provided.
+
+        Returns:
+            pd.DataFrame: Matching standing rows.
+        """
         frame = self.load_table(
             "standings",
             filters={
@@ -410,12 +520,23 @@ class Dataset:
 
     def load_officials(
         self,
-        official_id: str | Sequence[str] | None = None,
-        nation: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        official_id: StringFilter = None,
+        nation: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``officials`` table."""
+        """Load rows from the ``officials`` table.
+
+        Args:
+            official_id: Official identifier to filter by.
+            nation: Official nation code to filter by.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID columns when ``columns`` is not
+                provided.
+
+        Returns:
+            pd.DataFrame: Matching official rows.
+        """
         frame = self.load_table(
             "officials",
             filters={
@@ -434,20 +555,40 @@ class Dataset:
 
     def load_segment_officials(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        segment_id: str | Sequence[str] | None = None,
-        segment_label: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        official_id: str | Sequence[str] | None = None,
-        role: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        segment_id: StringFilter = None,
+        segment_label: StringFilter = None,
+        discipline: StringFilter = None,
+        official_id: StringFilter = None,
+        role: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``segment_officials`` table."""
+        """Load rows from the ``segment_officials`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            segment_id: Segment identifier to filter by.
+            segment_label: Short segment label, such as ``Men SP`` or ``Women FS``.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            official_id: Official identifier to filter by.
+            role: Panel role, such as ``Referee`` or ``Judge No.1``.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID and source columns when ``columns``
+                is not provided.
+
+        Returns:
+            pd.DataFrame: Matching segment-official rows.
+        """
         frame = self.load_table(
             "segment_officials",
             filters={
@@ -494,19 +635,38 @@ class Dataset:
 
     def load_program_components(
         self,
-        event_id: str | Sequence[str] | None = None,
-        event_series: str | Sequence[str] | None = None,
-        event_level: str | Sequence[str] | None = None,
-        season: str | Sequence[str] | None = None,
-        event_label: str | Sequence[str] | None = None,
-        segment_id: str | Sequence[str] | None = None,
-        segment_label: str | Sequence[str] | None = None,
-        discipline: str | Sequence[str] | None = None,
-        result_id: str | Sequence[str] | None = None,
-        columns: Sequence[str] | None = None,
+        event_id: StringFilter = None,
+        event_series: StringFilter = None,
+        event_level: StringFilter = None,
+        season: StringFilter = None,
+        event_label: StringFilter = None,
+        segment_id: StringFilter = None,
+        segment_label: StringFilter = None,
+        discipline: StringFilter = None,
+        result_id: StringFilter = None,
+        columns: ColumnSelection = None,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load rows from the ``program_components`` table."""
+        """Load rows from the ``program_components`` table.
+
+        Args:
+            event_id: Event identifier to filter by.
+            event_series: Event family, such as ``Worlds`` or ``Grand Prix``.
+            event_level: Event level, such as ``Senior``, ``Junior``, or ``Mixed``.
+            season: Season label, such as ``2025-2026``.
+            event_label: Readable event label, such as ``Worlds 2026``.
+            segment_id: Segment identifier to filter by.
+            segment_label: Short segment label, such as ``Men SP`` or ``Women FS``.
+            discipline: Discipline label, such as ``Men``, ``Women``, ``Pairs``,
+                or ``Ice Dance``.
+            result_id: Result identifier to filter by.
+            columns: Optional subset of columns to return.
+            include_ids: Whether to include ID and source columns when ``columns``
+                is not provided.
+
+        Returns:
+            pd.DataFrame: Matching program-component rows.
+        """
         frame = self.load_table("program_components", filters={"result_id": result_id})
         if (
             event_id is not None
@@ -540,7 +700,17 @@ class Dataset:
         return frame.reset_index(drop=True)
 
     def load_elements_for_result(self, result_row: pd.Series, include_ids: bool = False) -> pd.DataFrame:
-        """Load elements for a visible results row."""
+        """Load element rows for one visible result row.
+
+        Args:
+            result_row: Row from ``load_results()``. The row may include
+                ``result_id`` directly, or the visible fields needed to resolve it.
+            include_ids: Whether to include ID and source columns in the returned
+                element rows.
+
+        Returns:
+            pd.DataFrame: Element rows for the result.
+        """
         result_id = self.resolve_result_id(result_row)
         return self.load_elements(result_id=result_id, include_ids=include_ids)
 
@@ -549,12 +719,36 @@ class Dataset:
         result_row: pd.Series,
         include_ids: bool = False,
     ) -> pd.DataFrame:
-        """Load program components for a visible results row."""
+        """Load program-component rows for one visible result row.
+
+        Args:
+            result_row: Row from ``load_results()``. The row may include
+                ``result_id`` directly, or the visible fields needed to resolve it.
+            include_ids: Whether to include ID and source columns in the returned
+                program-component rows.
+
+        Returns:
+            pd.DataFrame: Program-component rows for the result.
+        """
         result_id = self.resolve_result_id(result_row)
         return self.load_program_components(result_id=result_id, include_ids=include_ids)
 
     def resolve_result_id(self, result_row: pd.Series) -> str:
-        """Resolve a stable result ID from a visible results row."""
+        """Resolve a stable result ID from a visible result row.
+
+        Args:
+            result_row: Row from ``load_results()``. If ``result_id`` is present,
+                it is returned directly. Otherwise the row must contain
+                ``event_label``, ``segment_label``, ``name``, ``noc``, and
+                ``starting_number``.
+
+        Returns:
+            str: Stable underlying result identifier.
+
+        Raises:
+            KeyError: If required visible lookup fields are missing.
+            ValueError: If the visible row does not resolve to exactly one result.
+        """
         if "result_id" in result_row.index:
             return str(result_row["result_id"])
 
@@ -581,7 +775,20 @@ class Dataset:
         column: str = "judge_scores",
         prefix: str = "judge_",
     ) -> pd.DataFrame:
-        """Expand list-valued judge scores into separate columns."""
+        """Expand list-valued judge scores into separate columns.
+
+        Args:
+            frame: Data frame containing a list-valued judge-score column.
+            column: Name of the list-valued score column.
+            prefix: Prefix for numbered judge columns.
+
+        Returns:
+            pd.DataFrame: Copy of ``frame`` with ``column`` replaced by numbered
+            judge-score columns such as ``judge_1`` and ``judge_2``.
+
+        Raises:
+            KeyError: If ``column`` is not present in ``frame``.
+        """
         if column not in frame.columns:
             raise KeyError(f"Column not found: {column}")
         expanded = pd.DataFrame(frame[column].tolist(), index=frame.index).add_prefix(prefix)
@@ -597,6 +804,16 @@ class Dataset:
 
         Scalar filter values use exact equality. Iterable filter values such as
         lists or tuples use "one of these values" semantics via ``isin``.
+
+        Args:
+            frame: Data frame to filter.
+            filters: Mapping from column name to scalar or multi-value filter.
+                Filters with ``None`` values are ignored. Filters for columns not
+                present in ``frame`` are also ignored.
+
+        Returns:
+            pd.DataFrame: Filtered data frame. When filters are applied, the
+            index is reset.
         """
         if not filters:
             return frame
@@ -612,7 +829,14 @@ class Dataset:
 
     @staticmethod
     def is_multi_value(value: Any) -> bool:
-        """Return whether a filter value should be treated as many values."""
+        """Return whether a filter value should be treated as many values.
+
+        Args:
+            value: Candidate filter value.
+
+        Returns:
+            bool: ``True`` when ``value`` should use ``isin`` semantics.
+        """
         return isinstance(value, Iterable) and not isinstance(value, (str, bytes, dict))
 
     @staticmethod
