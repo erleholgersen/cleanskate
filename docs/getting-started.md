@@ -36,7 +36,7 @@ ds = Dataset(version="latest")
 If you want to pin analysis to a specific published snapshot:
 
 ```python
-ds = Dataset(version="2026-04-12-segment-label-cleanup")
+ds = Dataset(version="2026-04-12")
 ```
 
 ## Useful Filtering Patterns
@@ -158,5 +158,5 @@ ds.prefetch(force=True)
 ```
 
 For reproducible analysis, prefer a dated dataset version instead of `latest`.
-See [Dataset operations](./dataset-operations.md) for the intended snapshot
+See [Dataset versions](./dataset-operations.md) for the intended snapshot
 policy.

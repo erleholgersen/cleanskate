@@ -1,107 +1,70 @@
-# Dataset Operations
+# Dataset Versions
 
-This page documents the intended process for publishing hosted cleanskate
-dataset snapshots.
+`cleanskate` publishes score data as hosted dataset snapshots. Most users only
+need to decide whether they want the moving `latest` snapshot or a fixed dated
+snapshot.
 
-## Versioning Policy
+## Which Version To Use
 
-Use two kinds of manifests:
+Use `latest` when you are exploring:
 
-- `latest.json`: a moving pointer for exploratory analysis.
-- Dated manifests: immutable snapshots for reproducible analysis.
+```python
+from cleanskate import Dataset
 
-Dated manifests should use a stable, descriptive version such as:
+ds = Dataset(version="latest")
+```
+
+`latest` points to the newest hosted dataset. It is convenient in notebooks, but
+it can change when coverage or parsing corrections are published.
+
+Use a dated snapshot when you want an analysis to be reproducible:
+
+```python
+ds = Dataset(version="2026-04-12")
+```
+
+Dated snapshots are intended to remain available after publication. If the data
+needs a correction, the corrected data should be published as a new dated
+snapshot, and `latest` should move to that new snapshot.
+
+## Reading A Snapshot Version
+
+Dataset versions are date-stamped:
 
 ```text
-2026-04-12-segment-label-cleanup
+YYYY-MM-DD
 ```
 
-Once published, a dated manifest should remain available. If a correction is
-needed, publish a new dated manifest and move `latest.json` to that new version.
+The date identifies the hosted dataset snapshot, not the Python package version.
+For example, `cleanskate==0.1.0` can read different dataset snapshots if they
+share the same public schema.
 
-## Snapshot Checklist
+## Recording A Snapshot
 
-Before publishing a new snapshot:
+For work you expect to revisit, record both:
 
-- Confirm every expected table exists.
-- Confirm every table has the required public columns.
-- Confirm foreign-key relationships line up:
-  - `segments.event_id` values exist in `events.event_id`.
-  - `results.segment_id` values exist in `segments.segment_id`.
-  - `elements.result_id` values exist in `results.result_id`.
-  - `program_components.result_id` values exist in `results.result_id`.
-  - `segment_officials.segment_id` values exist in `segments.segment_id`.
-  - `segment_officials.official_id` values exist in `officials.official_id`.
-- Record row counts for each table.
-- Spot-check at least one event from each major event family included in the
-  snapshot.
-- Confirm the manifest `updated_at` value changed.
-- Confirm `Dataset(version="<snapshot>")` can prefetch and load all tables.
-- Confirm `Dataset(version="latest")` resolves to the intended release after
-  updating `latest.json`.
+- the `cleanskate` package version
+- the dataset snapshot version
 
-## Required Tables
+Example:
 
-Hosted snapshots should include:
-
-- `events`
-- `segments`
-- `results`
-- `standings`
-- `officials`
-- `segment_officials`
-- `elements`
-- `program_components`
-
-## Manifest Expectations
-
-Each manifest table entry should include:
-
-- `url`
-- `filename`
-- `format`
-
-Parquet is preferred for hosted tables. JSON remains useful for small local test
-fixtures.
-
-## Publishing Flow
-
-1. Build the normalized tables.
-2. Validate the tables using the snapshot checklist.
-3. Export the snapshot bundle, including manifests and release metadata.
-4. Upload table files to the hosted dataset location.
-5. Upload a dated immutable manifest.
-6. Update `latest.json` only after the dated manifest is confirmed.
-7. Run a fresh `Dataset(version="latest").prefetch(force=True)` smoke test.
-8. Add a dataset changelog entry or release note describing coverage changes,
-   schema changes, and known caveats.
-
-## Snapshot Metadata
-
-The snapshot export flow should emit lightweight metadata alongside each
-manifest. At minimum, that metadata should include:
-
-- `version`
-- `updated_at`
-- row counts for every public table
-
-This makes it easier to:
-
-- write release notes quickly
-- compare snapshots at a glance
-- sanity-check that a release contains the expected public data
-
-## Release-Note Helper
-
-The backend repo includes a helper that turns snapshot metadata plus unresolved
-`EVENTS.yml` entries into a Markdown release-note skeleton:
-
-```bash
-python 10_prepare_dataset_release.py \
-  --metadata /tmp/cleanskate_snapshot/latest-metadata.json
+```text
+cleanskate package: 0.1.0
+cleanskate dataset snapshot: 2026-04-12
 ```
 
-You can paste the generated output into
-[`DATASET_CHANGELOG.md`](../DATASET_CHANGELOG.md) and then edit the coverage,
-schema, and quality sections with the specific human-facing notes for that
-snapshot.
+The important part is knowing which package and dataset produced the results.
+
+## Cache Behavior
+
+Downloaded files are cached locally per dataset version. Repeated calls with the
+same version use the local files after the first download.
+
+`Dataset(version="latest")` checks the hosted manifest and refreshes stale
+cached files when `latest` moves. If a notebook seems to be using old data, force
+a refresh:
+
+```python
+ds = Dataset(version="latest")
+ds.prefetch(force=True)
+```
