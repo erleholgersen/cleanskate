@@ -9,7 +9,7 @@ description = "Pandas-friendly access to figure skating scores"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-authors = [{ name = "Erle Ellis" }]
+authors = [{ name = "Erle Holgersen" }]
 keywords = ["figure skating", "sports analytics", "pandas", "data"]
 classifiers = [
   "Development Status :: 3 - Alpha",
