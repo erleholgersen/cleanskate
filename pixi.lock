@@ -898,7 +898,7 @@ packages:
 - pypi: ./
   name: cleanskate
   version: 0.1.0
-  sha256: 8fd087c91107527a7ba27647e1119af9f40067fbf9bb9c76c6fd8baa80b6b763
+  sha256: 10430ca1825312bc3702421313507a874e8271a4831800ee0cf865dac8d41905
   requires_dist:
   - pandas>=2.2
   - platformdirs>=4.3

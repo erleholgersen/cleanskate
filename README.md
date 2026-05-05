@@ -109,22 +109,22 @@ ds.prefetch()
 
 The repository currently includes:
 
-- [Quick start notebook](./examples/quick_start.ipynb)
-- [Judge nationality patterns notebook](./examples/judge_nationality_patterns.ipynb)
+- [Quick start notebook](https://github.com/erleholgersen/cleanskate/blob/main/examples/quick_start.ipynb)
+- [Judge nationality patterns notebook](https://github.com/erleholgersen/cleanskate/blob/main/examples/judge_nationality_patterns.ipynb)
 
 ## Documentation
 
 Additional docs:
 
-- [Getting started](./docs/getting-started.md)
-- [API reference](./docs/api-reference.md)
-- [Data model](./docs/data-model.md)
-- [Dataset operations](./docs/dataset-operations.md)
-- [Dataset changelog](./DATASET_CHANGELOG.md)
-- [Provenance and citation](./docs/provenance.md)
-- [Analysis notes](./docs/analysis-notes.md)
-- [Release process](./docs/release-process.md)
-- [Release readiness](./docs/release-readiness.md)
+- [Getting started](https://github.com/erleholgersen/cleanskate/blob/main/docs/getting-started.md)
+- [API reference](https://github.com/erleholgersen/cleanskate/blob/main/docs/api-reference.md)
+- [Data model](https://github.com/erleholgersen/cleanskate/blob/main/docs/data-model.md)
+- [Dataset operations](https://github.com/erleholgersen/cleanskate/blob/main/docs/dataset-operations.md)
+- [Dataset changelog](https://github.com/erleholgersen/cleanskate/blob/main/DATASET_CHANGELOG.md)
+- [Provenance and citation](https://github.com/erleholgersen/cleanskate/blob/main/docs/provenance.md)
+- [Analysis notes](https://github.com/erleholgersen/cleanskate/blob/main/docs/analysis-notes.md)
+- [Release process](https://github.com/erleholgersen/cleanskate/blob/main/docs/release-process.md)
+- [Release readiness](https://github.com/erleholgersen/cleanskate/blob/main/docs/release-readiness.md)
 
 
 ## Related Work
