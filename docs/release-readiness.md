@@ -36,8 +36,7 @@ Documentation:
 
 Testing and quality:
 
-- Watch the new CI workflow on the first pushed branch after this checklist
-  update.
+- Run the TestPyPI upload and install smoke test before publishing to PyPI.
 - Add linting or formatting once the preferred tool is chosen.
 
 Dataset operations:

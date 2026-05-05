@@ -1,10 +1,12 @@
 # ⛸️ cleanskate
 
 `cleanskate` is a Python package for loading figure skating scores as pandas data
-frames. The package covers overall results, judge information, program components scores, 
-and per element scores for international events from the `2018-2019` season onwards. 
+frames. The package covers overall results, judge information, program component
+scores, and per-element scores for international events from the `2018-2019`
+season onward.
 
 The current dataset covers major international events, including:
+
 - Olympics
 - Worlds
 - Junior Worlds
@@ -15,7 +17,8 @@ The current dataset covers major international events, including:
 - Junior Grand Prix
 - much of the Challenger Series
 
-The dataset may be expanded in the future. Feel free to open an issue if you notice anything missing.
+The dataset may be expanded in the future. Feel free to open an issue if you
+notice anything missing.
 
 ## Installation
 

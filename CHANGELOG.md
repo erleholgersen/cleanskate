@@ -22,3 +22,4 @@ Initial public package preparation:
 - Add GitHub issue templates for bugs, data issues, and feature requests.
 - Add a release process checklist for PyPI publishing and post-release smoke
   tests.
+- Add TestPyPI release instructions and reusable Pixi publish tasks.

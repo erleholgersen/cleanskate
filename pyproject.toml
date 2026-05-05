@@ -46,3 +46,14 @@ Documentation = "https://github.com/erleholgersen/cleanskate#readme"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cleanskate"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  ".github/",
+  ".pixi/",
+  "dist/",
+  ".pytest_cache/",
+  ".gitignore",
+  "pixi.toml",
+  "pixi.lock",
+]
