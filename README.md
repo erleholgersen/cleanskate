@@ -119,12 +119,9 @@ Additional docs:
 - [Getting started](https://github.com/erleholgersen/cleanskate/blob/main/docs/getting-started.md)
 - [API reference](https://github.com/erleholgersen/cleanskate/blob/main/docs/api-reference.md)
 - [Data model](https://github.com/erleholgersen/cleanskate/blob/main/docs/data-model.md)
-- [Dataset operations](https://github.com/erleholgersen/cleanskate/blob/main/docs/dataset-operations.md)
+- [Dataset versions](https://github.com/erleholgersen/cleanskate/blob/main/docs/dataset-operations.md)
 - [Dataset changelog](https://github.com/erleholgersen/cleanskate/blob/main/DATASET_CHANGELOG.md)
-- [Provenance and citation](https://github.com/erleholgersen/cleanskate/blob/main/docs/provenance.md)
 - [Analysis notes](https://github.com/erleholgersen/cleanskate/blob/main/docs/analysis-notes.md)
-- [Release process](https://github.com/erleholgersen/cleanskate/blob/main/docs/release-process.md)
-- [Release readiness](https://github.com/erleholgersen/cleanskate/blob/main/docs/release-readiness.md)
 
 
 ## Related Work
